@@ -1,14 +1,16 @@
-import { defineNitroConfig } from 'nitropack'
-
 export default defineNitroConfig({
-  srcDir: 'src',
-  noPublicDir: true,
+  srcDir: "src",
+
+  routeRules: {
+    "/api/**": { cors: true },
+  },
+
   imports: {
-    dts: './.nitro/types/nitro.d.ts',
-    dirs: [
-      './src/utils/**',
+    presets: [
+      { from: "zod", imports: ["z"] },
     ],
   },
+
   runtimeConfig: {
     DATABASE_HOST: process.env.DATABASE_HOST,
     DATABASE_USERNAME: process.env.DATABASE_USERNAME,

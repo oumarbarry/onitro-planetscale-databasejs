@@ -1,9 +1,8 @@
 export default defineEventHandler(async () => {
   try {
-    const movies = await oc.execute('SELECT * FROM movies')
-    return movies.rows
+    const response = await db.execute("SELECT * FROM movies")
+
+    return response.rows
   }
-  catch {
-    return createError({ statusCode: 500, statusMessage: 'SOMETHING WENT WRONG' })
-  }
+  catch { throw createError({ statusCode: 500, statusMessage: "Something went wrong." }) }
 })

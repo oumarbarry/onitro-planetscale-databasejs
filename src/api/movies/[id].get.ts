@@ -1,17 +1,10 @@
-import { useValidatedParams, z } from 'h3-zod'
-
 export default defineEventHandler(async (event) => {
-  const { id } = await useValidatedParams(event, { id: z.string() })
+  const { id } = await getValidatedRouterParams(event, z.object({ id: z.coerce.number() }).parse)
 
-  try {
-    const movie = await oc.execute('SELECT * FROM movies WHERE id=:id', { id })
+  const response = await db.execute("SELECT * FROM movies WHERE id=:id", { id })
 
-    if (movie.rows.length)
-      return movie.rows
-    else
-      return createError({ statusCode: 404, statusMessage: 'MOVIE NOT FOUND' })
-  }
-  catch {
-    return createError({ statusCode: 500, statusMessage: 'SOMETHING WENT WRONG' })
-  }
+  if (response.rows.length === 0)
+    throw createError({ statusCode: 400, statusMessage: "Movie not found." })
+
+  return response.rows
 })

@@ -1,17 +1,22 @@
-import { useValidatedBody, z } from 'h3-zod'
+const insertMovieSchema = z.object({
+  title: z.string().max(50),
+  description: z.string().max(500).optional(),
+})
 
 export default defineEventHandler(async (event) => {
-  const { title, description } = await useValidatedBody(event, z.object({
-    title: z.string().min(1).max(50),
-    description: z.string().optional(),
-  }))
+  const { title, description } = await readValidatedBody(event, insertMovieSchema.parse)
 
   try {
-    const response = await oc.execute('INSERT INTO movies (title, description) VALUES (:title, :description)', { title, description })
+    await db.execute(CREATE_TABLE_QUERY)
 
-    return { id: response?.insertId, title, description: description ?? null }
+    const response = await db.execute(
+      "INSERT INTO movies (title, description) VALUES (:title, :description)",
+      { title, description },
+    )
+
+    setResponseStatus(event, 201, "Created successfully.")
+
+    return response.rows
   }
-  catch {
-    return createError({ statusCode: 500, statusMessage: 'SOMETHING WENT WRONG' })
-  }
+  catch { throw createError({ statusCode: 500, statusMessage: "Something went wrong." }) }
 })
